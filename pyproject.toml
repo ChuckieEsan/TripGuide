@@ -6,11 +6,18 @@ authors = [
     {name = "LiuCY",email = "liuchenyu222@163.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi (>=0.119.1,<0.120.0)",
-    "uvicorn (>=0.38.0,<0.39.0)"
+    "uvicorn (>=0.38.0,<0.39.0)",
+    "beanie (>=2.0.0,<3.0.0)",
+    "pydantic-settings (>=2.11.0,<3.0.0)",
+    "motor (>=3.7.1,<4.0.0)",
+    "pydantic[email] (>=2.12.3,<3.0.0)"
 ]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
 
 
 [build-system]
