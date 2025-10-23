@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from beanie import Document, Link
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -22,7 +22,7 @@ class PointOfInterest(BaseModel):
     """
     兴趣点 (POI) 的内嵌数据模型。
     """
-    poi_id: str = Field(description="来自地图服务的唯一ID")
+    poi_id: str = Field(description="来自地图服务或AI生成的唯一ID")
     name: str = Field(description="POI 名称")
     type: str = Field(description="POI 类型 (例如: attraction, dining, shopping)")
     # 更多POI详情可以根据需要添加...
@@ -33,7 +33,7 @@ class DailyItinerary(BaseModel):
     """
     day_number: int = Field(..., description="行程第几天")
     theme: Optional[str] = Field(None, description="当天的主题，由AI生成")
-    pois: list[PointOfInterest] = []
+    pois: List[PointOfInterest] = []
 
 class TripPlan(Document):
     """
@@ -48,7 +48,7 @@ class TripPlan(Document):
     total_days: int = Field(description="总天数")
     status: str = Field(default="draft", description="计划状态 (draft, active, completed)")
     
-    daily_itineraries: list[DailyItinerary] = []
+    daily_itineraries: List[DailyItinerary] = []
     
     # 记录创建和更新时间
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -56,4 +56,42 @@ class TripPlan(Document):
 
     class Settings:
         name = "trip_plans"
+
+# --- AI 多 Agent 工作流 (MCP) 模型 ---
+
+class UserInput(BaseModel):
+    """
+    MCP: 用户的原始输入
+    """
+    rawQuery: str
+    userProfile: Dict[str, Any]
+
+class ParsedIntent(BaseModel):
+    """
+    MCP: 意图分析 Agent 的输出
+    """
+    destination: str
+    days: int
+    budget: Optional[str] = None
+    interests: List[str] = []
+
+class GeneratedFinalPlan(BaseModel):
+    """
+    MCP: 最终由 AI Agent 生成的计划结构
+    """
+    title: str
+    daily_itineraries: List[DailyItinerary]
+
+class TripContext(BaseModel):
+    """
+    MCP: 行程上下文对象
+    在多 Agent 工作流中传递的核心数据载体。
+    """
+    contextId: UUID = Field(default_factory=uuid4)
+    status: str = Field(default="initialized")
+    userInput: UserInput
+    parsedIntent: Optional[ParsedIntent] = None
+    # poiCandidates: Optional[List[PointOfInterest]] = None # (未来)
+    finalPlan: GeneratedFinalPlan
+    errorLog: List[str] = []
 
