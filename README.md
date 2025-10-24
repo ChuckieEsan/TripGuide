@@ -72,14 +72,14 @@ uvicorn app.main:app \--reload
 
 | 优先级 | 需求 ID | 需求描述 | US ID | US 描述 | 对应模块 |
 | :---- | :---- | :---- | :---- | :---- | :---- |
-| **P0** | **FE001** | **核心用户认证** | US011 | 用户可以使用邮箱、密码注册新账号 | models.user, api.v1.users |
-|  |  |  | US012 | 用户可以通过邮箱、密码登录，获取 JWT Token | api.v1.token, core.security |
-| **P0** | **FE002** | **AI 核心规划流程** | **US001** | **(已完成)** 用户能通过 API 发起一次 AI 规划请求 | api.v1.trips, services.trip\_service |
+| **P0** | **FE001** | **AI 核心规划流程** | **US001** | **(已完成)** 用户能通过 API 发起一次 AI 规划请求 | api.v1.trips, services.trip\_service |
 |  |  |  | **US002** | **(已完成)** AI Agent 链式处理用户请求，生成每日行程 | agents.\*, clients.ollama\_client |
 |  |  |  | **US003** | **(已完成)** AI Agent 自动为生成的行程分配预算明细 | agents.budgeter\_agent, models.trip |
 |  |  |  | US004 | 用户可以获取自己创建的所有旅行计划列表 | api.v1.trips, services.trip\_service |
 |  |  |  | US005 | 用户可以获取单个旅行计划的详细信息 | api.v1.trips, services.trip\_service |
 |  |  |  | US006 | 用户可以删除一个旅行计划 | api.v1.trips, services.trip\_service |
+| **P0** | **FE002** | **核心用户认证** | US011 | 用户可以使用邮箱、密码注册新账号 | models.user, api.v1.users |
+|  |  |  | US012 | 用户可以通过邮箱、密码登录，获取 JWT Token | api.v1.token, core.security |
 | **P1** | **FE003** | **AI 规划质量优化** | US009 | (优化) 引入专职的 POI 推荐 Agent | agents.poi\_recommender |
 |  |  |  | US010 | (优化) 引入地图/交通 Agent 优化路线合理性 | agents.map\_agent, clients.map\_client |
 | **P1** | **FE004** | **人机协同编辑** | US007 | 用户可以修改旅行计划的基础信息（如标题） | api.v1.trips, services.trip\_service |
