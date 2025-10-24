@@ -1,3 +1,4 @@
+# File: app/models/trip.py
 from typing import Optional, List, Dict, Any
 from beanie import Document, Link
 from pydantic import BaseModel, Field
@@ -35,6 +36,23 @@ class DailyItinerary(BaseModel):
     theme: Optional[str] = Field(None, description="当天的主题，由AI生成")
     pois: List[PointOfInterest] = []
 
+class BudgetBreakdown(BaseModel):
+    """
+    预算明细的内嵌数据模型。
+    """
+    transport: float = Field(0.0, description="交通费用")
+    accommodation: float = Field(0.0, description="住宿费用")
+    dining: float = Field(0.0, description="餐饮费用")
+    activities: float = Field(0.0, description="活动/门票费用")
+    other: float = Field(0.0, description="其他/购物费用")
+
+class Budget(BaseModel):
+    """
+    预算总览的内嵌数据模型。
+    """
+    total_amount_str: str = Field(description="用户提供的原始总预算字符串")
+    breakdown: Optional[BudgetBreakdown] = None
+
 class TripPlan(Document):
     """
     旅行计划主模型，将被存储在MongoDB中。
@@ -49,6 +67,7 @@ class TripPlan(Document):
     status: str = Field(default="draft", description="计划状态 (draft, active, completed)")
     
     daily_itineraries: List[DailyItinerary] = []
+    budget: Optional[Budget] = None # (US003 新增)
     
     # 记录创建和更新时间
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -81,6 +100,7 @@ class GeneratedFinalPlan(BaseModel):
     """
     title: str
     daily_itineraries: List[DailyItinerary]
+    budget: Optional[Budget] = None # (US003 新增)
 
 class TripContext(BaseModel):
     """

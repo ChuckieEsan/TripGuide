@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # 建议使用功能更强、遵循指令更好的模型
     INTENT_PARSER_MODEL: str = "llama3:8b" 
     SCHEDULER_MODEL: str = "llama3:8b"
-    # BUDGETER_MODEL: str = "llama3:8b" # (未来)
+    BUDGETER_MODEL: str = "llama3:8b" # (US003 新增)
 
     class Config:
         # Pydantic V2 class Config

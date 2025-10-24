@@ -2,7 +2,6 @@ from app.models.trip import TripGenerationRequest, TripPlan
 from app.models.user import User
 from datetime import datetime
 
-# 导入 AI 协调器
 from app.agents.orchestrator import AIOrchestrator
 
 async def generate_trip_plan_from_user_request(
@@ -29,9 +28,10 @@ async def generate_trip_plan_from_user_request(
         new_trip_plan = TripPlan(
             user=current_user,
             title=generated_plan.title,
-            destination_city=request.destination, # 保持使用用户原始输入的目的地
-            total_days=request.days,             # 保持使用用户原始输入的天数
+            destination_city=request.destination, # S003 保持使用用户原始输入的目的地
+            total_days=request.days,             # S003 保持使用用户原始输入的天数
             daily_itineraries=generated_plan.daily_itineraries,
+            budget=generated_plan.budget, # (US003 新增)
             status="draft",
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()

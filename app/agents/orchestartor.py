@@ -1,6 +1,7 @@
 from app.clients.ollama_client import OllamaClient
 from app.agents.intent_parser_agent import IntentParserAgent
 from app.agents.scheduler_agent import SchedulerAgent
+from app.agents.budgeter_agent import BudgeterAgent # (US003 新增)
 from app.models.trip import TripContext, TripGenerationRequest, GeneratedFinalPlan, UserInput
 from app.models.user import User
 from app.core.config import settings
@@ -25,7 +26,10 @@ class AIOrchestrator:
                 self.ollama_client,
                 model_name=settings.SCHEDULER_MODEL
             ),
-            # 未来的 Agent (如 BudgeterAgent) 可以在这里添加
+            BudgeterAgent(
+                self.ollama_client,
+                model_name=settings.BUDGETER_MODEL
+            ), # (US003 新增)
         ]
 
     async def process_request(
@@ -63,19 +67,27 @@ class AIOrchestrator:
         
         # 2. 依次执行 Agent 链
         for agent in self.agents:
-            if context.status == "error":
+            if context.status == "error" and agent.__class__.__name__ != "BudgeterAgent":
+                # (US003 修改) 即使其他步骤失败，也尝试运行 BudgeterAgent
+                # 但如果意图分析失败，则 Budgeter 也无法运行，所以这里需要更精细的控制
+                # 为简单起见，我们保持原逻辑：一旦出错就停止
                 print(f"--- [Orchestrator] 工作流因错误而提前终止 ---")
                 break
             
             context = await agent.execute(context)
             
         # 3. 检查最终状态
-        if context.status == "error" or not context.finalPlan.daily_itineraries:
-            print(f"--- [Orchestrator] AI 工作流未能成功生成计划 ---")
+        if context.status == "error": # (US003 修改) Budgeter 可能会设置 error
+            print(f"--- [Orchestrator] AI 工作流执行期间发生非致命错误 ---")
             print(f"错误日志: {context.errorLog}")
-            raise Exception(f"AI 工作流失败: {context.errorLog}")
+            # 即使预算失败，我们也认为行程生成是成功的
+        
+        if not context.finalPlan.daily_itineraries:
+            print(f"--- [Orchestrator] AI 工作流未能成功生成计划 ---")
+            raise Exception(f"AI 工作流失败 (未能生成行程): {context.errorLog}")
             
         print("--- [Orchestrator] AI 请求处理成功 ---")
         
         # 4. 返回最终的规划结果
         return context.finalPlan
+
