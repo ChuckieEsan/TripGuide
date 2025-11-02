@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Response
+from typing import List
+from beanie import PydanticObjectId
 from app.models.trip import TripGenerationRequest, TripPlan
 from app.api.deps import CurrentUser
 from app.services import trip_service
@@ -28,4 +30,52 @@ async def generate_trip_plan(
         current_user=current_user
     )
     return new_plan
+
+# --- (FE001 新增) ---
+
+@router.get(
+    "/",
+    response_model=List[TripPlan],
+    summary="US004: 获取当前用户的所有旅行计划"
+)
+async def get_all_trip_plans(
+    current_user: CurrentUser,
+):
+    """
+    获取登录用户创建的所有旅行计划列表。
+    """
+    return await trip_service.get_trip_plans_for_user(current_user)
+
+@router.get(
+    "/{trip_id}",
+    response_model=TripPlan,
+    summary="US005: 获取单个旅行计划详情"
+)
+async def get_trip_plan(
+    trip_id: PydanticObjectId,
+    current_user: CurrentUser,
+):
+    """
+    根据 ID 获取单个旅行计划的详细信息。
+    如果计划不存在或不属于当前用户，将返回 404。
+    """
+    return await trip_service.get_trip_plan_by_id(trip_id, current_user)
+
+@router.delete(
+    "/{trip_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="US006: 删除一个旅行计划"
+)
+async def delete_trip_plan(
+    trip_id: PydanticObjectId,
+    current_user: CurrentUser,
+):
+    """
+    根据 ID 删除一个旅行计划。
+    如果计划不存在或不属于当前用户，将返回 404。
+    成功删除后，返回 204 No Content。
+    """
+    await trip_service.delete_trip_plan_by_id(trip_id, current_user)
+    # 返回一个没有内容的 204 响应
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
