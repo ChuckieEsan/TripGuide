@@ -14,7 +14,7 @@ class SchedulerAgent(BaseAgent):
     
     def __init__(self, ollama_client: OllamaClient, model_name: str):
         super().__init__(ollama_client, model_name)
-        self.prompt_template = self._load_prompt_template("scheduler.txt")
+        self._load_prompt_template("scheduler.txt")
         self.system_message = (
             "You are a world-class travel planner. "
             "Your task is to create a detailed daily itinerary based on the user's structured preferences. "
@@ -33,7 +33,7 @@ class SchedulerAgent(BaseAgent):
         print("--- [Agent] 正在执行行程规划 ---")
         
         # 格式化 Prompt
-        prompt = self.prompt_template.format(
+        prompt = self.prompt_template.substitute(
             destination=context.parsedIntent.destination,
             days=context.parsedIntent.days,
             budget=context.parsedIntent.budget,

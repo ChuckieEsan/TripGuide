@@ -11,12 +11,12 @@
 
 用户信息：
 
-目的地: {destination}
+目的地: $destination
 
-总天数: {days}
+总天数: $days
 
-总预算: {total_budget}
+总预算: $total_budget
 
 已生成的行程（用于参考消费活动的丰富程度）:
 
-{itineraries_json}
+$itineraries_json

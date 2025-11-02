@@ -11,7 +11,7 @@ class BudgeterAgent(BaseAgent):
 
     def __init__(self, ollama_client: OllamaClient, model_name: str):
         super().__init__(ollama_client, model_name)
-        self.prompt_template = self._load_prompt_template("budgeter.txt")
+        self._load_prompt_template("budgeter.txt")
         # 定义此 Agent 希望 AI 返回的 JSON 格式的系统提示
         self.system_message = (
             "You are a meticulous travel budget analyst. "
@@ -43,7 +43,7 @@ class BudgeterAgent(BaseAgent):
             indent=2
         )
 
-        prompt = self.prompt_template.format(
+        prompt = self.prompt_template.substitute(
             total_budget=context.parsedIntent.budget,
             destination=context.parsedIntent.destination,
             days=context.parsedIntent.days,

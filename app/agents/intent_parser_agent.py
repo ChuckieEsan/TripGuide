@@ -12,7 +12,7 @@ class IntentParserAgent(BaseAgent):
     def __init__(self, ollama_client: OllamaClient, model_name: str):
         super().__init__(ollama_client, model_name)
         # 加载此 Agent 专用的 Prompt 模板
-        self.prompt_template = self._load_prompt_template("intent_parser.txt")
+        self._load_prompt_template("intent_parser.txt")
         # 定义此 Agent 希望 AI 返回的 JSON 格式的系统提示
         self.system_message = (
             "You are an expert travel assistant. "
@@ -28,7 +28,7 @@ class IntentParserAgent(BaseAgent):
         print("--- [Agent] 正在执行意图分析 ---")
         
         # 格式化 Prompt
-        prompt = self.prompt_template.format(
+        prompt = self.prompt_template.substitute(
             user_query=context.userInput.rawQuery
         )
 

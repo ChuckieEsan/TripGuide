@@ -1,3 +1,6 @@
+from fastapi import HTTPException, status
+from beanie import PydanticObjectId
+from typing import List
 from app.models.trip import TripGenerationRequest, TripPlan
 from app.models.user import User
 from datetime import datetime
@@ -50,4 +53,61 @@ async def generate_trip_plan_from_user_request(
         # (例如: raise HTTPException(status_code=500, detail=str(e)))
         # 为简单起见，我们暂时只打印错误并返回 None 或抛出异常
         raise
+
+# --- (FE001 新增) ---
+
+async def get_trip_plans_for_user(current_user: User) -> List[TripPlan]:
+    """
+    (US004) 获取当前用户的所有旅行计划列表
+    """
+    # Beanie 2.0.0 使用 Link.id 进行查询
+    return await TripPlan.find(
+        TripPlan.user.id == current_user.id
+    ).to_list()
+
+async def get_trip_plan_by_id(
+    trip_id: PydanticObjectId, 
+    current_user: User
+) -> TripPlan:
+    """
+    (US005) 获取单个旅行计划详情。
+    必须确保该计划属于当前用户。
+    """
+    # 1. 根据 ID 查找计划
+    trip = await TripPlan.get(trip_id)
+    
+    if not trip:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="未找到该旅行计划"
+        )
+        
+    # 2. 验证所有权
+    # 在 Beanie 2.0 中, Link 需要在使用前 fetch
+    await trip.fetch_link(TripPlan.user)
+    
+    if trip.user.id != current_user.id:
+        # 如果用户试图访问不属于他们的计划，返回 404 (安全最佳实践)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="未找到该旅行计划"
+        )
+        
+    return trip
+
+async def delete_trip_plan_by_id(
+    trip_id: PydanticObjectId, 
+    current_user: User
+) -> None:
+    """
+    (US006) 删除一个旅行计划。
+    必须确保该计划属于当前用户。
+    """
+    # 重用 get_trip_plan_by_id 逻辑来执行权限检查
+    # 如果找不到或不属于该用户，它将自动引发 404
+    trip_to_delete = await get_trip_plan_by_id(trip_id, current_user)
+    
+    # 执行删除
+    await trip_to_delete.delete()
+    return
 
